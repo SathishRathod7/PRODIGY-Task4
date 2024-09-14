@@ -1,0 +1,152 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+df=pd.read_csv('/kaggle/input/us-accidents/US_Accidents_Dec21_updated.csv')
+df.head()
+df.columns
+df.dtypes.value_counts()
+df.shape
+df.describe()
+df.State.unique
+
+df1=df[df['State']=='CA']
+df1['IDD'] = df1['ID'].astype('str').str.extractall('(\d+)').unstack().fillna('').sum(axis=1).astype(int)
+df1
+df1.head()
+df1.columns
+df1.duplicated().sum()
+d1f=df1.dropna(subset=['Precipitation(in)'])
+df1=df1.dropna(subset=['Temperature(F)','Wind_Chill(F)','Humidity(%)','Pressure(in)','Visibility(mi)','Wind_Direction', 'Wind_Speed(mph)', 'Weather_Condition'])
+df1.isna().sum()/len(df1)*100
+df1=df1.dropna(subset=['City','Sunrise_Sunset', 'Civil_Twilight', 'Nautical_Twilight', 'Astronomical_Twilight'])
+df1.isna().sum()/len(df1)*100
+df1['Weather_Condition'].value_counts()
+df1.Side.unique()
+
+df_cat=df1.select_dtypes('object')
+df_num=df1.select_dtypes(np.number)
+df_cat=df_cat.drop('ID',axis=1)
+
+df_cat=df1.select_dtypes('object')
+col_name=[]
+length=[]
+
+for i in df_cat.columns:
+    col_name.append(i)
+    length.append(len(df_cat[i].unique()))
+df_2=pd.DataFrame(zip(col_name,length),columns=['feature','count_of_unique_values'])
+df_2
+
+df1.drop(['Description','Zipcode','Weather_Timestamp'],axis=1,inplace=True)
+del df1['Airport_Code']
+df_num.columns
+len(df_num.columns)
+df_cat.columns
+len(df['City'].unique())
+
+df_num=df1.select_dtypes(np.number)
+col_name=[]
+length=[]
+
+for i in df_num.columns:
+    col_name.append(i)
+    length.append(len(df_num[i].unique()))
+df_2=pd.DataFrame(zip(col_name,length),columns=['feature','count_of_unique_values'])
+df_2
+
+plt.figure(figsize=(15 ,9))
+sns.heatmap(df_num.corr() , annot=True)
+
+cities = df1['City'].unique()
+len(cities)
+
+accidents_by_cities = df1['City'].value_counts()
+accidents_by_cities
+accidents_by_cities[:10]
+
+fig, ax = plt.subplots(figsize=(8,5))
+accidents_by_cities[:10].plot(kind='bar')
+ax.set(title = 'Top 10 cities By Number of Accidents',
+       xlabel = 'Cities',
+       ylabel = 'Accidents Count')
+plt.show()
+
+accidents_severity = df1.groupby('Severity').count()['ID']
+accidents_severity
+
+fig, ax = plt.subplots(figsize=(8, 6), subplot_kw=dict(aspect="equal"))
+label = [1,2,3,4]
+plt.pie(accidents_severity, labels=label,
+        autopct='%1.1f%%', pctdistance=0.85)
+circle = plt.Circle( (0,0), 0.5, color='white')
+p=plt.gcf()
+p.gca().add_artist(circle)
+ax.set_title("Accident by Severity",fontdict={'fontsize': 16})
+plt.tight_layout()
+plt.show()
+
+df1['Start_Time'].dtypes
+df1['End_Time'].dtypes
+df1 = df1.astype({'Start_Time': 'datetime64[ns]', 'End_Time': 'datetime64[ns]'})
+df1['Start_Time'].dtypes
+df1['Start_Time'][2408]
+df1['End_Time'][2408]
+
+df1['start_date'] = [d.date() for d in df1['Start_Time']]
+df1['start_time'] = [d.time() for d in df1['Start_Time']]
+
+df1['end_date'] = [d.date() for d in df1['End_Time']]
+df1['end_time'] = [d.time() for d in df1['End_Time']]
+df1['end_time']
+
+fig, ax = plt.subplots(figsize=(8,5))
+sns.histplot(df1['Start_Time'].dt.hour, bins = 24)
+
+plt.xlabel("Start Time")
+plt.ylabel("Number of Occurence")
+plt.title('Accidents Count By Time of Day')
+plt.show()
+
+fig, ax = plt.subplots(figsize=(8,5))
+sns.histplot(df1['Start_Time'].dt.hour, bins = 24)
+
+plt.xlabel("End_Time")
+plt.ylabel("Number of Occurence")
+plt.title('Accidents Count By Time of Day')
+plt.show()
+
+del df1['Start_Time']
+del df1['End_Time']
+
+%matplotlib inline
+import os
+
+fig, ax = plt.subplots(figsize=(8,5))
+weather_conditions.sort_values(ascending=False)[:20].plot(kind='bar')
+ax.set(title = 'Weather Conditions at Time of Accident Occurence',
+       xlabel = 'Weather',
+       ylabel = 'Accidents Count')
+plt.show()
+
+df.shape
+df_num.shape
+df1.groupby('Severity').count()['IDD']
+df_num.plot(kind='scatter', y='Start_Lat', x='Severity')
+
+sns.jointplot(x=df_num.Start_Lat.values , y=df_num.Start_Lng.values,height=10)
+plt.ylabel('Start lattitude', fontsize=12)
+plt.xlabel('Start lattitude', fontsize=12)
+plt.show()
+
+sns.jointplot(x=df_num.End_Lat.values , y=df_num.End_Lng.values,height=10)
+plt.ylabel('end lattitude', fontsize=12)
+plt.xlabel('end longitude', fontsize=12)
+plt.show()
